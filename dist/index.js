@@ -4538,7 +4538,7 @@ function expand(str, isTop) {
     ? expand(m.post, false)
     : [''];
 
-  if (/\$$/.test(m.pre)) {
+  if (/\$$/.test(m.pre)) {    
     for (var k = 0; k < post.length; k++) {
       var expansion = pre+ '{' + m.body + '}' + post[k];
       expansions.push(expansion);
@@ -23522,28 +23522,28 @@ var AttributeAction;
       var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZWN]|"[^"]*"|'[^']*'/g;
       var timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
       var timezoneClip = /[^-+\dA-Z]/g;
-
+  
       // Regexes and supporting functions are cached through closure
       return function (date, mask, utc, gmt) {
-
+  
         // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
         if (arguments.length === 1 && kindOf(date) === 'string' && !/\d/.test(date)) {
           mask = date;
           date = undefined;
         }
-
+  
         date = date || new Date;
-
+  
         if(!(date instanceof Date)) {
           date = new Date(date);
         }
-
+  
         if (isNaN(date)) {
           throw TypeError('Invalid date');
         }
-
+  
         mask = String(dateFormat.masks[mask] || mask || dateFormat.masks['default']);
-
+  
         // Allow setting the utc/gmt argument via the mask
         var maskSlice = mask.slice(0, 4);
         if (maskSlice === 'UTC:' || maskSlice === 'GMT:') {
@@ -23553,7 +23553,7 @@ var AttributeAction;
             gmt = true;
           }
         }
-
+  
         var _ = utc ? 'getUTC' : 'get';
         var d = date[_ + 'Date']();
         var D = date[_ + 'Day']();
@@ -23597,7 +23597,7 @@ var AttributeAction;
           W:    W,
           N:    N
         };
-
+  
         return mask.replace(token, function (match) {
           if (match in flags) {
             return flags[match];
@@ -23680,7 +23680,7 @@ function getWeek(date) {
 /**
  * Get ISO-8601 numeric representation of the day of the week
  * 1 (for Monday) through 7 (for Sunday)
- *
+ * 
  * @param  {Object} `date`
  * @return {Number}
  */
@@ -29882,7 +29882,7 @@ function DBCSCodec(codecOptions, iconv) {
     this.decodeTables = [];
     this.decodeTables[0] = UNASSIGNED_NODE.slice(0); // Create root node.
 
-    // Sometimes a MBCS char corresponds to a sequence of unicode chars. We store them as arrays of integers here.
+    // Sometimes a MBCS char corresponds to a sequence of unicode chars. We store them as arrays of integers here. 
     this.decodeTableSeq = [];
 
     // Actual mapping tables consist of chunks. Use them to fill up decode tables.
@@ -29933,7 +29933,7 @@ function DBCSCodec(codecOptions, iconv) {
 
     this.defaultCharUnicode = iconv.defaultCharUnicode;
 
-
+    
     // Encode tables: Unicode -> DBCS.
 
     // `encodeTable` is array mapping from unicode char to encoded char. All its values are integers for performance.
@@ -29942,7 +29942,7 @@ function DBCSCodec(codecOptions, iconv) {
     //         == UNASSIGNED -> no conversion found. Output a default char.
     //         <= SEQ_START  -> it's an index in encodeTableSeq, see below. The character starts a sequence.
     this.encodeTable = [];
-
+    
     // `encodeTableSeq` is used when a sequence of unicode characters is encoded as a single code. We use a tree of
     // objects where keys correspond to characters in sequence and leafs are the encoded dbcs values. A special DEF_CHAR key
     // means end of sequence (needed when one sequence is a strict subsequence of another).
@@ -29960,7 +29960,7 @@ function DBCSCodec(codecOptions, iconv) {
                 for (var j = val.from; j <= val.to; j++)
                     skipEncodeChars[j] = true;
         }
-
+        
     // Use decode trie to recursively fill out encode tables.
     this._fillEncodeTable(0, 0, skipEncodeChars);
 
@@ -30038,7 +30038,7 @@ DBCSCodec.prototype._addDecodeChunk = function(chunk) {
                 else
                     writeTable[curAddr++] = code; // Basic char
             }
-        }
+        } 
         else if (typeof part === "number") { // Integer, meaning increasing sequence starting with prev character.
             var charCode = writeTable[curAddr - 1] + 1;
             for (var l = 0; l < part; l++)
@@ -30069,7 +30069,7 @@ DBCSCodec.prototype._setEncodeChar = function(uCode, dbcsCode) {
 }
 
 DBCSCodec.prototype._setEncodeSequence = function(seq, dbcsCode) {
-
+    
     // Get the root of character tree according to first character of the sequence.
     var uCode = seq[0];
     var bucket = this._getEncodeBucket(uCode);
@@ -30143,7 +30143,7 @@ function DBCSEncoder(options, codec) {
     // Encoder state
     this.leadSurrogate = -1;
     this.seqObj = undefined;
-
+    
     // Static data
     this.encodeTable = codec.encodeTable;
     this.encodeTableSeq = codec.encodeTableSeq;
@@ -30165,7 +30165,7 @@ DBCSEncoder.prototype.write = function(str) {
         }
         else {
             var uCode = nextChar;
-            nextChar = -1;
+            nextChar = -1;    
         }
 
         // 1. Handle surrogates.
@@ -30187,7 +30187,7 @@ DBCSEncoder.prototype.write = function(str) {
                     // Incomplete surrogate pair - only trail surrogate found.
                     uCode = UNASSIGNED;
                 }
-
+                
             }
         }
         else if (leadSurrogate !== -1) {
@@ -30228,7 +30228,7 @@ DBCSEncoder.prototype.write = function(str) {
             var subtable = this.encodeTable[uCode >> 8];
             if (subtable !== undefined)
                 dbcsCode = subtable[uCode & 0xFF];
-
+            
             if (dbcsCode <= SEQ_START) { // Sequence start
                 seqObj = this.encodeTableSeq[SEQ_START-dbcsCode];
                 continue;
@@ -30251,7 +30251,7 @@ DBCSEncoder.prototype.write = function(str) {
         // 3. Write dbcsCode character.
         if (dbcsCode === UNASSIGNED)
             dbcsCode = this.defaultCharSingleByte;
-
+        
         if (dbcsCode < 0x100) {
             newBuf[j++] = dbcsCode;
         }
@@ -30303,7 +30303,7 @@ DBCSEncoder.prototype.end = function() {
         newBuf[j++] = this.defaultCharSingleByte;
         this.leadSurrogate = -1;
     }
-
+    
     return newBuf.slice(0, j);
 }
 
@@ -30327,7 +30327,7 @@ function DBCSDecoder(options, codec) {
 
 DBCSDecoder.prototype.write = function(buf) {
     var newBuf = Buffer.alloc(buf.length*2),
-        nodeIdx = this.nodeIdx,
+        nodeIdx = this.nodeIdx, 
         prevBytes = this.prevBytes, prevOffset = this.prevBytes.length,
         seqStart = -this.prevBytes.length, // idx of the start of current parsed sequence.
         uCode;
@@ -30338,7 +30338,7 @@ DBCSDecoder.prototype.write = function(buf) {
         // Lookup in current trie node.
         var uCode = this.decodeTables[nodeIdx][curByte];
 
-        if (uCode >= 0) {
+        if (uCode >= 0) { 
             // Normal character, just use it.
         }
         else if (uCode === UNASSIGNED) { // Unknown char.
@@ -30350,9 +30350,9 @@ DBCSDecoder.prototype.write = function(buf) {
             if (i >= 3) {
                 var ptr = (buf[i-3]-0x81)*12600 + (buf[i-2]-0x30)*1260 + (buf[i-1]-0x81)*10 + (curByte-0x30);
             } else {
-                var ptr = (prevBytes[i-3+prevOffset]-0x81)*12600 +
-                          (((i-2 >= 0) ? buf[i-2] : prevBytes[i-2+prevOffset])-0x30)*1260 +
-                          (((i-1 >= 0) ? buf[i-1] : prevBytes[i-1+prevOffset])-0x81)*10 +
+                var ptr = (prevBytes[i-3+prevOffset]-0x81)*12600 + 
+                          (((i-2 >= 0) ? buf[i-2] : prevBytes[i-2+prevOffset])-0x30)*1260 + 
+                          (((i-1 >= 0) ? buf[i-1] : prevBytes[i-1+prevOffset])-0x81)*10 + 
                           (curByte-0x30);
             }
             var idx = findIdx(this.gb18030.gbChars, ptr);
@@ -30375,7 +30375,7 @@ DBCSDecoder.prototype.write = function(buf) {
             throw new Error("iconv-lite internal error: invalid decoding table value " + uCode + " at " + nodeIdx + "/" + curByte);
 
         // Write the character to buffer, handling higher planes using surrogate pair.
-        if (uCode >= 0x10000) {
+        if (uCode >= 0x10000) { 
             uCode -= 0x10000;
             var uCodeLead = 0xD800 | (uCode >> 10);
             newBuf[j++] = uCodeLead & 0xFF;
@@ -30450,11 +30450,11 @@ function findIdx(table, val) {
 // require()-s are direct to support Browserify.
 
 module.exports = {
-
+    
     // == Japanese/ShiftJIS ====================================================
     // All japanese encodings are based on JIS X set of standards:
     // JIS X 0201 - Single-byte encoding of ASCII + ¥ + Kana chars at 0xA1-0xDF.
-    // JIS X 0208 - Main set of 6879 characters, placed in 94x94 plane, to be encoded by 2 bytes.
+    // JIS X 0208 - Main set of 6879 characters, placed in 94x94 plane, to be encoded by 2 bytes. 
     //              Has several variations in 1978, 1983, 1990 and 1997.
     // JIS X 0212 - Supplementary plane of 6067 chars in 94x94 plane. 1990. Effectively dead.
     // JIS X 0213 - Extension and modern replacement of 0208 and 0212. Total chars: 11233.
@@ -30472,7 +30472,7 @@ module.exports = {
     //               0x8F, (0xA1-0xFE)x2 - 0212 plane (94x94).
     //  * JIS X 208: 7-bit, direct encoding of 0208. Byte ranges: 0x21-0x7E (94 values). Uncommon.
     //               Used as-is in ISO2022 family.
-    //  * ISO2022-JP: Stateful encoding, with escape sequences to switch between ASCII,
+    //  * ISO2022-JP: Stateful encoding, with escape sequences to switch between ASCII, 
     //                0201-1976 Roman, 0208-1978, 0208-1983.
     //  * ISO2022-JP-1: Adds esc seq for 0212-1990.
     //  * ISO2022-JP-2: Adds esc seq for GB2313-1980, KSX1001-1992, ISO8859-1, ISO8859-7.
@@ -30584,7 +30584,7 @@ module.exports = {
     //  * Windows CP 951: Microsoft variant of Big5-HKSCS-2001. Seems to be never public. http://me.abelcheung.org/articles/research/what-is-cp951/
     //  * Big5-2003 (Taiwan standard) almost superset of cp950.
     //  * Unicode-at-on (UAO) / Mozilla 1.8. Falling out of use on the Web. Not supported by other browsers.
-    //  * Big5-HKSCS (-2001, -2004, -2008). Hong Kong standard.
+    //  * Big5-HKSCS (-2001, -2004, -2008). Hong Kong standard. 
     //    many unicode code points moved from PUA to Supplementary plane (U+2XXXX) over the years.
     //    Plus, it has 4 combining sequences.
     //    Seems that Mozilla refused to support it for 10 yrs. https://bugzilla.mozilla.org/show_bug.cgi?id=162431 https://bugzilla.mozilla.org/show_bug.cgi?id=310299
@@ -30595,7 +30595,7 @@ module.exports = {
     //    In the encoder, it might make sense to support encoding old PUA mappings to Big5 bytes seq-s.
     //    Official spec: http://www.ogcio.gov.hk/en/business/tech_promotion/ccli/terms/doc/2003cmp_2008.txt
     //                   http://www.ogcio.gov.hk/tc/business/tech_promotion/ccli/terms/doc/hkscs-2008-big5-iso.txt
-    //
+    // 
     // Current understanding of how to deal with Big5(-HKSCS) is in the Encoding Standard, http://encoding.spec.whatwg.org/#big5-encoder
     // Unicode mapping (http://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT) is said to be wrong.
 
@@ -30818,7 +30818,7 @@ function InternalDecoderCesu8(options, codec) {
 }
 
 InternalDecoderCesu8.prototype.write = function(buf) {
-    var acc = this.acc, contBytes = this.contBytes, accBytes = this.accBytes,
+    var acc = this.acc, contBytes = this.contBytes, accBytes = this.accBytes, 
         res = '';
     for (var i = 0; i < buf.length; i++) {
         var curByte = buf[i];
@@ -30880,17 +30880,17 @@ InternalDecoderCesu8.prototype.end = function() {
 var Buffer = (__nccwpck_require__(15118).Buffer);
 
 // Single-byte codec. Needs a 'chars' string parameter that contains 256 or 128 chars that
-// correspond to encoded bytes (if 128 - then lower half is ASCII).
+// correspond to encoded bytes (if 128 - then lower half is ASCII). 
 
 exports._sbcs = SBCSCodec;
 function SBCSCodec(codecOptions, iconv) {
     if (!codecOptions)
         throw new Error("SBCS codec is called without the data.")
-
+    
     // Prepare char buffer for decoding.
     if (!codecOptions.chars || (codecOptions.chars.length !== 128 && codecOptions.chars.length !== 256))
         throw new Error("Encoding '"+codecOptions.type+"' has incorrect 'chars' (must be of len 128 or 256)");
-
+    
     if (codecOptions.chars.length === 128) {
         var asciiString = "";
         for (var i = 0; i < 128; i++)
@@ -30899,7 +30899,7 @@ function SBCSCodec(codecOptions, iconv) {
     }
 
     this.decodeBuf = Buffer.from(codecOptions.chars, 'ucs2');
-
+    
     // Encoding buffer.
     var encodeBuf = Buffer.alloc(65536, iconv.defaultCharSingleByte.charCodeAt(0));
 
@@ -30921,7 +30921,7 @@ SBCSEncoder.prototype.write = function(str) {
     var buf = Buffer.alloc(str.length);
     for (var i = 0; i < str.length; i++)
         buf[i] = this.encodeBuf[str.charCodeAt(i)];
-
+    
     return buf;
 }
 
@@ -31719,7 +31719,7 @@ Utf16Decoder.prototype.write = function(buf) {
         // Codec is not chosen yet. Accumulate initial bytes.
         this.initialBufs.push(buf);
         this.initialBufsLen += buf.length;
-
+        
         if (this.initialBufsLen < 16) // We need more bytes to use space heuristic (see below)
             return '';
 
@@ -31926,7 +31926,7 @@ Utf32Decoder.prototype.write = function(src) {
     if (overflow.length > 0) {
         for (; i < src.length && overflow.length < 4; i++)
             overflow.push(src[i]);
-
+        
         if (overflow.length === 4) {
             // NOTE: codepoint is a signed int32 and can be negative.
             // NOTE: We copied this block from below to help V8 optimize it (it works with array, not buffer).
@@ -31965,7 +31965,7 @@ function _writeCodepoint(dst, offset, codepoint, badChar) {
     if (codepoint < 0 || codepoint > 0x10FFFF) {
         // Not a valid Unicode codepoint
         codepoint = badChar;
-    }
+    } 
 
     // Ephemeral Planes: Write high surrogate.
     if (codepoint >= 0x10000) {
@@ -32037,7 +32037,7 @@ function Utf32AutoDecoder(options, codec) {
 }
 
 Utf32AutoDecoder.prototype.write = function(buf) {
-    if (!this.decoder) {
+    if (!this.decoder) { 
         // Codec is not chosen yet. Accumulate initial bytes.
         this.initialBufs.push(buf);
         this.initialBufsLen += buf.length;
@@ -32162,8 +32162,8 @@ Utf7Encoder.prototype.write = function(str) {
     // Naive implementation.
     // Non-direct chars are encoded as "+<base64>-"; single "+" char is encoded as "+-".
     return Buffer.from(str.replace(nonDirectChars, function(chunk) {
-        return "+" + (chunk === '+' ? '' :
-            this.iconv.encode(chunk, 'utf16-be').toString('base64').replace(/=+$/, ''))
+        return "+" + (chunk === '+' ? '' : 
+            this.iconv.encode(chunk, 'utf16-be').toString('base64').replace(/=+$/, '')) 
             + "-";
     }.bind(this)));
 }
@@ -32185,7 +32185,7 @@ var base64Chars = [];
 for (var i = 0; i < 256; i++)
     base64Chars[i] = base64Regex.test(String.fromCharCode(i));
 
-var plusChar = '+'.charCodeAt(0),
+var plusChar = '+'.charCodeAt(0), 
     minusChar = '-'.charCodeAt(0),
     andChar = '&'.charCodeAt(0);
 
@@ -32514,7 +32514,7 @@ iconv.encode = function encode(str, encoding, options) {
 
     var res = encoder.write(str);
     var trail = encoder.end();
-
+    
     return (trail && trail.length > 0) ? Buffer.concat([res, trail]) : res;
 }
 
@@ -32554,7 +32554,7 @@ iconv._codecDataCache = {};
 iconv.getCodec = function getCodec(encoding) {
     if (!iconv.encodings)
         iconv.encodings = __nccwpck_require__(89541); // Lazy load all encoding definitions.
-
+    
     // Canonicalize encoding name: strip all non-alphanumeric chars and appended year.
     var enc = iconv._canonicalizeEncoding(encoding);
 
@@ -32578,7 +32578,7 @@ iconv.getCodec = function getCodec(encoding) {
 
                 if (!codecOptions.encodingName)
                     codecOptions.encodingName = enc;
-
+                
                 enc = codecDef.type;
                 break;
 
@@ -32681,7 +32681,7 @@ if (false) {}
 
 var Buffer = (__nccwpck_require__(15118).Buffer);
 
-// NOTE: Due to 'stream' module being pretty large (~100Kb, significant in browser environments),
+// NOTE: Due to 'stream' module being pretty large (~100Kb, significant in browser environments), 
 // we opt to dependency-inject it instead of creating a hard dependency.
 module.exports = function(stream_module) {
     var Transform = stream_module.Transform;
@@ -32763,7 +32763,7 @@ module.exports = function(stream_module) {
     IconvLiteDecoderStream.prototype._flush = function(done) {
         try {
             var res = this.conv.end();
-            if (res && res.length) this.push(res, this.encoding);
+            if (res && res.length) this.push(res, this.encoding);                
             done();
         }
         catch (e) {
@@ -32899,7 +32899,7 @@ var DecodingMode;
 var EntityDecoder = /** @class */ (function () {
     function EntityDecoder(
     /** The tree used to decode entities. */
-    decodeTree,
+    decodeTree, 
     /**
      * The function that is called when a codepoint is decoded.
      *
@@ -32909,7 +32909,7 @@ var EntityDecoder = /** @class */ (function () {
      * @param codepoint The decoded codepoint.
      * @param consumed The number of bytes consumed by the decoder.
      */
-    emitCodePoint,
+    emitCodePoint, 
     /** An object that is used to produce errors. */
     errors) {
         this.decodeTree = decodeTree;
@@ -33224,7 +33224,7 @@ function getDecoder(decodeTree) {
         while ((offset = str.indexOf("&", offset)) >= 0) {
             ret += str.slice(lastIndex, offset);
             decoder.startEntity(decodeMode);
-            var len = decoder.write(str,
+            var len = decoder.write(str, 
             // Skip the "&"
             offset + 1);
             if (len < 0) {
@@ -33376,7 +33376,7 @@ var decodeMap = new Map([
 /**
  * Polyfill for `String.fromCodePoint`. It is used to create a string from a Unicode code point.
  */
-exports.fromCodePoint =
+exports.fromCodePoint = 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, node/no-unsupported-features/es-builtins
 (_a = String.fromCodePoint) !== null && _a !== void 0 ? _a : function (codePoint) {
     var output = "";
@@ -33516,7 +33516,7 @@ var xmlCodeMap = new Map([
     [62, "&gt;"],
 ]);
 // For compatibility with node < 4, we wrap `codePointAt`
-exports.getCodePoint =
+exports.getCodePoint = 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 String.prototype.codePointAt != null
     ? function (str, index) { return str.codePointAt(index); }
@@ -51058,7 +51058,7 @@ const errors_1 = __nccwpck_require__(93637);
 const sentence_case_1 = __nccwpck_require__(36662);
 const group_priority_1 = __nccwpck_require__(83172);
 const pluginFactories = {
-    'linked-versions': options =>
+    'linked-versions': options => 
     // NOTE: linked-versions had already have a different behavior about merging
     // see test/plugins/compatibility/linked-versions-workspace.ts
     new linked_versions_1.LinkedVersions(options.github, options.targetBranch, options.repositoryConfig, options.type.groupName, options.type.components, {
@@ -53261,14 +53261,6 @@ class Manifest {
         // TODO: consider leaving the snooze label
         await this.github.removeIssueLabels([exports.SNOOZE_LABEL], snoozed.number);
         return updatedPullRequest;
-    }
-    /// force an update to an existing pull request
-    async updateExistingPullRequest(existing, pullRequest) {
-        return await this.github.updatePullRequest(existing.number, pullRequest, this.targetBranch, {
-            fork: this.fork,
-            signoffUser: this.signoffUser,
-            pullRequestOverflowHandler: this.pullRequestOverflowHandler,
-        });
     }
     /// force an update to an existing pull request
     async updateExistingPullRequest(existing, pullRequest) {
@@ -58513,80 +58505,6 @@ exports.R = R;
 
 /***/ }),
 
-/***/ 92918:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.R = void 0;
-const base_1 = __nccwpck_require__(95081);
-const news_1 = __nccwpck_require__(15833);
-const version_1 = __nccwpck_require__(17348);
-const description_1 = __nccwpck_require__(72543);
-const CHANGELOG_SECTIONS = [
-    { type: 'feat', section: 'Features' },
-    { type: 'fix', section: 'Bug Fixes' },
-    { type: 'perf', section: 'Performance Improvements' },
-    { type: 'deps', section: 'Dependencies' },
-    { type: 'revert', section: 'Reverts' },
-    { type: 'docs', section: 'Documentation' },
-    { type: 'style', section: 'Styles', hidden: true },
-    { type: 'chore', section: 'Miscellaneous Chores', hidden: true },
-    { type: 'refactor', section: 'Code Refactoring', hidden: true },
-    { type: 'test', section: 'Tests', hidden: true },
-    { type: 'build', section: 'Build System', hidden: true },
-    { type: 'ci', section: 'Continuous Integration', hidden: true },
-];
-class R extends base_1.BaseStrategy {
-    constructor(options) {
-        var _a, _b;
-        options.changelogPath = (_a = options.changelogPath) !== null && _a !== void 0 ? _a : 'NEWS.md';
-        options.changelogSections = (_b = options.changelogSections) !== null && _b !== void 0 ? _b : CHANGELOG_SECTIONS;
-        super(options);
-    }
-    async buildUpdates(options) {
-        const updates = [];
-        const version = options.newVersion;
-        updates.push({
-            path: this.addPath(this.changelogPath),
-            createIfMissing: true,
-            updater: new news_1.News({
-                version,
-                changelogEntry: options.changelogEntry,
-            }),
-        });
-        updates.push({
-            path: this.addPath('DESCRIPTION'),
-            createIfMissing: false,
-            updater: new description_1.DescriptionUpdater({
-                version,
-            }),
-        });
-        return updates;
-    }
-    initialReleaseVersion() {
-        return version_1.Version.parse('0.1.0');
-    }
-}
-exports.R = R;
-//# sourceMappingURL=r.js.map
-
-/***/ }),
-
 /***/ 72294:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -61394,101 +61312,6 @@ class SetupPy extends default_1.DefaultUpdater {
 }
 exports.SetupPy = SetupPy;
 //# sourceMappingURL=setup-py.js.map
-
-/***/ }),
-
-/***/ 72543:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DescriptionUpdater = void 0;
-const default_1 = __nccwpck_require__(69995);
-/**
- * Updates the DESCRIPTION file of an R package.
- */
-class DescriptionUpdater extends default_1.DefaultUpdater {
-    /**
-     * Given initial file contents, return updated contents.
-     * @param {string} content The initial content
-     * @returns {string} The updated content
-     */
-    updateContent(content) {
-        return content.replace(/^Version:\s*[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?\s*$/m, `Version: ${this.version}`);
-    }
-}
-exports.DescriptionUpdater = DescriptionUpdater;
-//# sourceMappingURL=description.js.map
-
-/***/ }),
-
-/***/ 15833:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.News = void 0;
-const default_1 = __nccwpck_require__(69995);
-const DEFAULT_VERSION_HEADER_REGEX = '\n### v?[0-9[]';
-class News extends default_1.DefaultUpdater {
-    constructor(options) {
-        var _a;
-        super(options);
-        this.changelogEntry = options.changelogEntry;
-        this.versionHeaderRegex = new RegExp((_a = options.versionHeaderRegex) !== null && _a !== void 0 ? _a : DEFAULT_VERSION_HEADER_REGEX, 's');
-    }
-    updateContent(content) {
-        content = content || '';
-        const lastEntryIndex = content.search(this.versionHeaderRegex);
-        if (lastEntryIndex === -1) {
-            if (content) {
-                return `${this.changelogEntry}\n\n${adjustHeaders(content).trim()}\n`;
-            }
-            else {
-                return `${this.changelogEntry}\n`;
-            }
-        }
-        else {
-            const before = content.slice(0, lastEntryIndex);
-            const after = content.slice(lastEntryIndex);
-            return `${before}\n${this.changelogEntry}\n${after}`.trim() + '\n';
-        }
-    }
-}
-exports.News = News;
-// Helper to increase markdown H1 headers to H2
-function adjustHeaders(content) {
-    return content.replace(/^#(\s)/gm, '##$1');
-}
-//# sourceMappingURL=news.js.map
 
 /***/ }),
 
@@ -68869,7 +68692,7 @@ IndexedSourceMapConsumer.prototype.sourceContentFor =
  * and an object is returned with the following properties:
  *
  *   - line: The line number in the generated source, or null.  The
- *     line number is 1-based.
+ *     line number is 1-based. 
  *   - column: The column number in the generated source, or null.
  *     The column number is 0-based.
  */
@@ -103607,7 +103430,7 @@ class Document {
             replacer = undefined;
         }
         const { aliasDuplicateObjects, anchorPrefix, flow, keepUndefined, onTagObj, tag } = options ?? {};
-        const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(this,
+        const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(this, 
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         anchorPrefix || 'a');
         const ctx = {
@@ -110815,8 +110638,770 @@ class Jsep {
     return this.runHook('after-token', node);
   }
 
+  /**
+   * Gobble properties of of identifiers/strings/arrays/groups.
+   * e.g. `foo`, `bar.baz`, `foo['bar'].baz`
+   * It also gobbles function calls:
+   * e.g. `Math.acos(obj.angle)`
+   * @param {jsep.Expression} node
+   * @returns {jsep.Expression}
+   */
+  gobbleTokenProperty(node) {
+    this.gobbleSpaces();
+    let ch = this.code;
+    while (ch === Jsep.PERIOD_CODE || ch === Jsep.OBRACK_CODE || ch === Jsep.OPAREN_CODE || ch === Jsep.QUMARK_CODE) {
+      let optional;
+      if (ch === Jsep.QUMARK_CODE) {
+        if (this.expr.charCodeAt(this.index + 1) !== Jsep.PERIOD_CODE) {
+          break;
+        }
+        optional = true;
+        this.index += 2;
+        this.gobbleSpaces();
+        ch = this.code;
+      }
+      this.index++;
+      if (ch === Jsep.OBRACK_CODE) {
+        node = {
+          type: Jsep.MEMBER_EXP,
+          computed: true,
+          object: node,
+          property: this.gobbleExpression()
+        };
+        if (!node.property) {
+          this.throwError('Unexpected "' + this.char + '"');
+        }
+        this.gobbleSpaces();
+        ch = this.code;
+        if (ch !== Jsep.CBRACK_CODE) {
+          this.throwError('Unclosed [');
+        }
+        this.index++;
+      } else if (ch === Jsep.OPAREN_CODE) {
+        // A function call is being made; gobble all the arguments
+        node = {
+          type: Jsep.CALL_EXP,
+          'arguments': this.gobbleArguments(Jsep.CPAREN_CODE),
+          callee: node
+        };
+      } else if (ch === Jsep.PERIOD_CODE || optional) {
+        if (optional) {
+          this.index--;
+        }
+        this.gobbleSpaces();
+        node = {
+          type: Jsep.MEMBER_EXP,
+          computed: false,
+          object: node,
+          property: this.gobbleIdentifier()
+        };
+      }
+      if (optional) {
+        node.optional = true;
+      } // else leave undefined for compatibility with esprima
+
+      this.gobbleSpaces();
+      ch = this.code;
+    }
+    return node;
+  }
+
+  /**
+   * Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
+   * keep track of everything in the numeric literal and then calling `parseFloat` on that string
+   * @returns {jsep.Literal}
+   */
+  gobbleNumericLiteral() {
+    let number = '',
+      ch,
+      chCode;
+    while (Jsep.isDecimalDigit(this.code)) {
+      number += this.expr.charAt(this.index++);
+    }
+    if (this.code === Jsep.PERIOD_CODE) {
+      // can start with a decimal marker
+      number += this.expr.charAt(this.index++);
+      while (Jsep.isDecimalDigit(this.code)) {
+        number += this.expr.charAt(this.index++);
+      }
+    }
+    ch = this.char;
+    if (ch === 'e' || ch === 'E') {
+      // exponent marker
+      number += this.expr.charAt(this.index++);
+      ch = this.char;
+      if (ch === '+' || ch === '-') {
+        // exponent sign
+        number += this.expr.charAt(this.index++);
+      }
+      while (Jsep.isDecimalDigit(this.code)) {
+        // exponent itself
+        number += this.expr.charAt(this.index++);
+      }
+      if (!Jsep.isDecimalDigit(this.expr.charCodeAt(this.index - 1))) {
+        this.throwError('Expected exponent (' + number + this.char + ')');
+      }
+    }
+    chCode = this.code;
+
+    // Check to make sure this isn't a variable name that start with a number (123abc)
+    if (Jsep.isIdentifierStart(chCode)) {
+      this.throwError('Variable names cannot start with a number (' + number + this.char + ')');
+    } else if (chCode === Jsep.PERIOD_CODE || number.length === 1 && number.charCodeAt(0) === Jsep.PERIOD_CODE) {
+      this.throwError('Unexpected period');
+    }
+    return {
+      type: Jsep.LITERAL,
+      value: parseFloat(number),
+      raw: number
+    };
+  }
+
+  /**
+   * Parses a string literal, staring with single or double quotes with basic support for escape codes
+   * e.g. `"hello world"`, `'this is\nJSEP'`
+   * @returns {jsep.Literal}
+   */
+  gobbleStringLiteral() {
+    let str = '';
+    const startIndex = this.index;
+    const quote = this.expr.charAt(this.index++);
+    let closed = false;
+    while (this.index < this.expr.length) {
+      let ch = this.expr.charAt(this.index++);
+      if (ch === quote) {
+        closed = true;
+        break;
+      } else if (ch === '\\') {
+        // Check for all of the common escape codes
+        ch = this.expr.charAt(this.index++);
+        switch (ch) {
+          case 'n':
+            str += '\n';
+            break;
+          case 'r':
+            str += '\r';
+            break;
+          case 't':
+            str += '\t';
+            break;
+          case 'b':
+            str += '\b';
+            break;
+          case 'f':
+            str += '\f';
+            break;
+          case 'v':
+            str += '\x0B';
+            break;
+          default:
+            str += ch;
+        }
+      } else {
+        str += ch;
+      }
+    }
+    if (!closed) {
+      this.throwError('Unclosed quote after "' + str + '"');
+    }
+    return {
+      type: Jsep.LITERAL,
+      value: str,
+      raw: this.expr.substring(startIndex, this.index)
+    };
+  }
+
+  /**
+   * Gobbles only identifiers
+   * e.g.: `foo`, `_value`, `$x1`
+   * Also, this function checks if that identifier is a literal:
+   * (e.g. `true`, `false`, `null`) or `this`
+   * @returns {jsep.Identifier}
+   */
+  gobbleIdentifier() {
+    let ch = this.code,
+      start = this.index;
+    if (Jsep.isIdentifierStart(ch)) {
+      this.index++;
+    } else {
+      this.throwError('Unexpected ' + this.char);
+    }
+    while (this.index < this.expr.length) {
+      ch = this.code;
+      if (Jsep.isIdentifierPart(ch)) {
+        this.index++;
+      } else {
+        break;
+      }
+    }
+    return {
+      type: Jsep.IDENTIFIER,
+      name: this.expr.slice(start, this.index)
+    };
+  }
+
+  /**
+   * Gobbles a list of arguments within the context of a function call
+   * or array literal. This function also assumes that the opening character
+   * `(` or `[` has already been gobbled, and gobbles expressions and commas
+   * until the terminator character `)` or `]` is encountered.
+   * e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
+   * @param {number} termination
+   * @returns {jsep.Expression[]}
+   */
+  gobbleArguments(termination) {
+    const args = [];
+    let closed = false;
+    let separator_count = 0;
+    while (this.index < this.expr.length) {
+      this.gobbleSpaces();
+      let ch_i = this.code;
+      if (ch_i === termination) {
+        // done parsing
+        closed = true;
+        this.index++;
+        if (termination === Jsep.CPAREN_CODE && separator_count && separator_count >= args.length) {
+          this.throwError('Unexpected token ' + String.fromCharCode(termination));
+        }
+        break;
+      } else if (ch_i === Jsep.COMMA_CODE) {
+        // between expressions
+        this.index++;
+        separator_count++;
+        if (separator_count !== args.length) {
+          // missing argument
+          if (termination === Jsep.CPAREN_CODE) {
+            this.throwError('Unexpected token ,');
+          } else if (termination === Jsep.CBRACK_CODE) {
+            for (let arg = args.length; arg < separator_count; arg++) {
+              args.push(null);
+            }
+          }
+        }
+      } else if (args.length !== separator_count && separator_count !== 0) {
+        // NOTE: `&& separator_count !== 0` allows for either all commas, or all spaces as arguments
+        this.throwError('Expected comma');
+      } else {
+        const node = this.gobbleExpression();
+        if (!node || node.type === Jsep.COMPOUND) {
+          this.throwError('Expected comma');
+        }
+        args.push(node);
+      }
+    }
+    if (!closed) {
+      this.throwError('Expected ' + String.fromCharCode(termination));
+    }
+    return args;
+  }
+
+  /**
+   * Responsible for parsing a group of things within parentheses `()`
+   * that have no identifier in front (so not a function call)
+   * This function assumes that it needs to gobble the opening parenthesis
+   * and then tries to gobble everything within that parenthesis, assuming
+   * that the next thing it should see is the close parenthesis. If not,
+   * then the expression probably doesn't have a `)`
+   * @returns {boolean|jsep.Expression}
+   */
+  gobbleGroup() {
+    this.index++;
+    let nodes = this.gobbleExpressions(Jsep.CPAREN_CODE);
+    if (this.code === Jsep.CPAREN_CODE) {
+      this.index++;
+      if (nodes.length === 1) {
+        return nodes[0];
+      } else if (!nodes.length) {
+        return false;
+      } else {
+        return {
+          type: Jsep.SEQUENCE_EXP,
+          expressions: nodes
+        };
+      }
+    } else {
+      this.throwError('Unclosed (');
+    }
+  }
+
+  /**
+   * Responsible for parsing Array literals `[1, 2, 3]`
+   * This function assumes that it needs to gobble the opening bracket
+   * and then tries to gobble the expressions as arguments.
+   * @returns {jsep.ArrayExpression}
+   */
+  gobbleArray() {
+    this.index++;
+    return {
+      type: Jsep.ARRAY_EXP,
+      elements: this.gobbleArguments(Jsep.CBRACK_CODE)
+    };
+  }
+}
+
+// Static fields:
+const hooks = new Hooks();
+Object.assign(Jsep, {
+  hooks,
+  plugins: new Plugins(Jsep),
+  // Node Types
+  // ----------
+  // This is the full set of types that any JSEP node can be.
+  // Store them here to save space when minified
+  COMPOUND: 'Compound',
+  SEQUENCE_EXP: 'SequenceExpression',
+  IDENTIFIER: 'Identifier',
+  MEMBER_EXP: 'MemberExpression',
+  LITERAL: 'Literal',
+  THIS_EXP: 'ThisExpression',
+  CALL_EXP: 'CallExpression',
+  UNARY_EXP: 'UnaryExpression',
+  BINARY_EXP: 'BinaryExpression',
+  ARRAY_EXP: 'ArrayExpression',
+  TAB_CODE: 9,
+  LF_CODE: 10,
+  CR_CODE: 13,
+  SPACE_CODE: 32,
+  PERIOD_CODE: 46,
+  // '.'
+  COMMA_CODE: 44,
+  // ','
+  SQUOTE_CODE: 39,
+  // single quote
+  DQUOTE_CODE: 34,
+  // double quotes
+  OPAREN_CODE: 40,
+  // (
+  CPAREN_CODE: 41,
+  // )
+  OBRACK_CODE: 91,
+  // [
+  CBRACK_CODE: 93,
+  // ]
+  QUMARK_CODE: 63,
+  // ?
+  SEMCOL_CODE: 59,
+  // ;
+  COLON_CODE: 58,
+  // :
+
+  // Operations
+  // ----------
+  // Use a quickly-accessible map to store all of the unary operators
+  // Values are set to `1` (it really doesn't matter)
+  unary_ops: {
+    '-': 1,
+    '!': 1,
+    '~': 1,
+    '+': 1
+  },
+  // Also use a map for the binary operations but set their values to their
+  // binary precedence for quick reference (higher number = higher precedence)
+  // see [Order of operations](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence)
+  binary_ops: {
+    '||': 1,
+    '??': 1,
+    '&&': 2,
+    '|': 3,
+    '^': 4,
+    '&': 5,
+    '==': 6,
+    '!=': 6,
+    '===': 6,
+    '!==': 6,
+    '<': 7,
+    '>': 7,
+    '<=': 7,
+    '>=': 7,
+    '<<': 8,
+    '>>': 8,
+    '>>>': 8,
+    '+': 9,
+    '-': 9,
+    '*': 10,
+    '/': 10,
+    '%': 10,
+    '**': 11
+  },
+  // sets specific binary_ops as right-associative
+  right_associative: new Set(['**']),
+  // Additional valid identifier chars, apart from a-z, A-Z and 0-9 (except on the starting char)
+  additional_identifier_chars: new Set(['$', '_']),
+  // Literals
+  // ----------
+  // Store the values to return for the various literals we may encounter
+  literals: {
+    'true': true,
+    'false': false,
+    'null': null
+  },
+  // Except for `this`, which is special. This could be changed to something like `'self'` as well
+  this_str: 'this'
+});
+Jsep.max_unop_len = Jsep.getMaxKeyLen(Jsep.unary_ops);
+Jsep.max_binop_len = Jsep.getMaxKeyLen(Jsep.binary_ops);
+
+// Backward Compatibility:
+const jsep = expr => new Jsep(expr).parse();
+const stdClassProps = Object.getOwnPropertyNames(class Test {});
+Object.getOwnPropertyNames(Jsep).filter(prop => !stdClassProps.includes(prop) && jsep[prop] === undefined).forEach(m => {
+  jsep[m] = Jsep[m];
+});
+jsep.Jsep = Jsep; // allows for const { Jsep } = require('jsep');
+
+const CONDITIONAL_EXP = 'ConditionalExpression';
+var ternary = {
+  name: 'ternary',
+  init(jsep) {
+    // Ternary expression: test ? consequent : alternate
+    jsep.hooks.add('after-expression', function gobbleTernary(env) {
+      if (env.node && this.code === jsep.QUMARK_CODE) {
+        this.index++;
+        const test = env.node;
+        const consequent = this.gobbleExpression();
+        if (!consequent) {
+          this.throwError('Expected expression');
+        }
+        this.gobbleSpaces();
+        if (this.code === jsep.COLON_CODE) {
+          this.index++;
+          const alternate = this.gobbleExpression();
+          if (!alternate) {
+            this.throwError('Expected expression');
+          }
+          env.node = {
+            type: CONDITIONAL_EXP,
+            test,
+            consequent,
+            alternate
+          };
+
+          // check for operators of higher priority than ternary (i.e. assignment)
+          // jsep sets || at 1, and assignment at 0.9, and conditional should be between them
+          if (test.operator && jsep.binary_ops[test.operator] <= 0.9) {
+            let newTest = test;
+            while (newTest.right.operator && jsep.binary_ops[newTest.right.operator] <= 0.9) {
+              newTest = newTest.right;
+            }
+            env.node.test = newTest.right;
+            newTest.right = env.node;
+            env.node = test;
+          }
+        } else {
+          this.throwError('Expected :');
+        }
+      }
+    });
+  }
+};
+
+// Add default plugins:
+
+jsep.plugins.register(ternary);
+
+const FSLASH_CODE = 47; // '/'
+const BSLASH_CODE = 92; // '\\'
+
+var index = {
+  name: 'regex',
+  init(jsep) {
+    // Regex literal: /abc123/ig
+    jsep.hooks.add('gobble-token', function gobbleRegexLiteral(env) {
+      if (this.code === FSLASH_CODE) {
+        const patternIndex = ++this.index;
+        let inCharSet = false;
+        while (this.index < this.expr.length) {
+          if (this.code === FSLASH_CODE && !inCharSet) {
+            const pattern = this.expr.slice(patternIndex, this.index);
+            let flags = '';
+            while (++this.index < this.expr.length) {
+              const code = this.code;
+              if (code >= 97 && code <= 122 // a...z
+              || code >= 65 && code <= 90 // A...Z
+              || code >= 48 && code <= 57) {
+                // 0-9
+                flags += this.char;
+              } else {
+                break;
+              }
+            }
+            let value;
+            try {
+              value = new RegExp(pattern, flags);
+            } catch (e) {
+              this.throwError(e.message);
+            }
+            env.node = {
+              type: jsep.LITERAL,
+              value,
+              raw: this.expr.slice(patternIndex - 1, this.index)
+            };
+
+            // allow . [] and () after regex: /regex/.test(a)
+            env.node = this.gobbleTokenProperty(env.node);
+            return env.node;
+          }
+          if (this.code === jsep.OBRACK_CODE) {
+            inCharSet = true;
+          } else if (inCharSet && this.code === jsep.CBRACK_CODE) {
+            inCharSet = false;
+          }
+          this.index += this.code === BSLASH_CODE ? 2 : 1;
+        }
+        this.throwError('Unclosed Regex');
+      }
+    });
+  }
+};
+
+const PLUS_CODE = 43; // +
+const MINUS_CODE = 45; // -
+
+const plugin = {
+  name: 'assignment',
+  assignmentOperators: new Set(['=', '*=', '**=', '/=', '%=', '+=', '-=', '<<=', '>>=', '>>>=', '&=', '^=', '|=', '||=', '&&=', '??=']),
+  updateOperators: [PLUS_CODE, MINUS_CODE],
+  assignmentPrecedence: 0.9,
+  init(jsep) {
+    const updateNodeTypes = [jsep.IDENTIFIER, jsep.MEMBER_EXP];
+    plugin.assignmentOperators.forEach(op => jsep.addBinaryOp(op, plugin.assignmentPrecedence, true));
+    jsep.hooks.add('gobble-token', function gobbleUpdatePrefix(env) {
+      const code = this.code;
+      if (plugin.updateOperators.some(c => c === code && c === this.expr.charCodeAt(this.index + 1))) {
+        this.index += 2;
+        env.node = {
+          type: 'UpdateExpression',
+          operator: code === PLUS_CODE ? '++' : '--',
+          argument: this.gobbleTokenProperty(this.gobbleIdentifier()),
+          prefix: true
+        };
+        if (!env.node.argument || !updateNodeTypes.includes(env.node.argument.type)) {
+          this.throwError(`Unexpected ${env.node.operator}`);
+        }
+      }
+    });
+    jsep.hooks.add('after-token', function gobbleUpdatePostfix(env) {
+      if (env.node) {
+        const code = this.code;
+        if (plugin.updateOperators.some(c => c === code && c === this.expr.charCodeAt(this.index + 1))) {
+          if (!updateNodeTypes.includes(env.node.type)) {
+            this.throwError(`Unexpected ${env.node.operator}`);
+          }
+          this.index += 2;
+          env.node = {
+            type: 'UpdateExpression',
+            operator: code === PLUS_CODE ? '++' : '--',
+            argument: env.node,
+            prefix: false
+          };
+        }
+      }
+    });
+    jsep.hooks.add('after-expression', function gobbleAssignment(env) {
+      if (env.node) {
+        // Note: Binaries can be chained in a single expression to respect
+        // operator precedence (i.e. a = b = 1 + 2 + 3)
+        // Update all binary assignment nodes in the tree
+        updateBinariesToAssignments(env.node);
+      }
+    });
+    function updateBinariesToAssignments(node) {
+      if (plugin.assignmentOperators.has(node.operator)) {
+        node.type = 'AssignmentExpression';
+        updateBinariesToAssignments(node.left);
+        updateBinariesToAssignments(node.right);
+      } else if (!node.operator) {
+        Object.values(node).forEach(val => {
+          if (val && typeof val === 'object') {
+            updateBinariesToAssignments(val);
+          }
+        });
+      }
+    }
+  }
+};
+
+/* eslint-disable no-bitwise -- Convenient */
+
+// register plugins
+jsep.plugins.register(index, plugin);
+jsep.addUnaryOp('typeof');
+jsep.addLiteral('null', null);
+jsep.addLiteral('undefined', undefined);
+const BLOCKED_PROTO_PROPERTIES = new Set(['constructor', '__proto__', '__defineGetter__', '__defineSetter__']);
+const SafeEval = {
+  /**
+   * @param {jsep.Expression} ast
+   * @param {Record<string, any>} subs
+   */
+  evalAst(ast, subs) {
+    switch (ast.type) {
+      case 'BinaryExpression':
+      case 'LogicalExpression':
+        return SafeEval.evalBinaryExpression(ast, subs);
+      case 'Compound':
+        return SafeEval.evalCompound(ast, subs);
+      case 'ConditionalExpression':
+        return SafeEval.evalConditionalExpression(ast, subs);
+      case 'Identifier':
+        return SafeEval.evalIdentifier(ast, subs);
+      case 'Literal':
+        return SafeEval.evalLiteral(ast, subs);
+      case 'MemberExpression':
+        return SafeEval.evalMemberExpression(ast, subs);
+      case 'UnaryExpression':
+        return SafeEval.evalUnaryExpression(ast, subs);
+      case 'ArrayExpression':
+        return SafeEval.evalArrayExpression(ast, subs);
+      case 'CallExpression':
+        return SafeEval.evalCallExpression(ast, subs);
+      case 'AssignmentExpression':
+        return SafeEval.evalAssignmentExpression(ast, subs);
+      default:
+        throw SyntaxError('Unexpected expression', ast);
+    }
+  },
+  evalBinaryExpression(ast, subs) {
+    const result = {
+      '||': (a, b) => a || b(),
+      '&&': (a, b) => a && b(),
+      '|': (a, b) => a | b(),
+      '^': (a, b) => a ^ b(),
+      '&': (a, b) => a & b(),
+      // eslint-disable-next-line eqeqeq -- API
+      '==': (a, b) => a == b(),
+      // eslint-disable-next-line eqeqeq -- API
+      '!=': (a, b) => a != b(),
+      '===': (a, b) => a === b(),
+      '!==': (a, b) => a !== b(),
+      '<': (a, b) => a < b(),
+      '>': (a, b) => a > b(),
+      '<=': (a, b) => a <= b(),
+      '>=': (a, b) => a >= b(),
+      '<<': (a, b) => a << b(),
+      '>>': (a, b) => a >> b(),
+      '>>>': (a, b) => a >>> b(),
+      '+': (a, b) => a + b(),
+      '-': (a, b) => a - b(),
+      '*': (a, b) => a * b(),
+      '/': (a, b) => a / b(),
+      '%': (a, b) => a % b()
+    }[ast.operator](SafeEval.evalAst(ast.left, subs), () => SafeEval.evalAst(ast.right, subs));
+    return result;
+  },
+  evalCompound(ast, subs) {
+    let last;
+    for (let i = 0; i < ast.body.length; i++) {
+      if (ast.body[i].type === 'Identifier' && ['var', 'let', 'const'].includes(ast.body[i].name) && ast.body[i + 1] && ast.body[i + 1].type === 'AssignmentExpression') {
+        // var x=2; is detected as
+        // [{Identifier var}, {AssignmentExpression x=2}]
+        // eslint-disable-next-line @stylistic/max-len -- Long
+        // eslint-disable-next-line sonarjs/updated-loop-counter -- Convenient
+        i += 1;
+      }
+      const expr = ast.body[i];
+      last = SafeEval.evalAst(expr, subs);
+    }
+    return last;
+  },
+  evalConditionalExpression(ast, subs) {
+    if (SafeEval.evalAst(ast.test, subs)) {
+      return SafeEval.evalAst(ast.consequent, subs);
+    }
+    return SafeEval.evalAst(ast.alternate, subs);
+  },
+  evalIdentifier(ast, subs) {
+    if (Object.hasOwn(subs, ast.name)) {
+      return subs[ast.name];
+    }
+    throw ReferenceError(`${ast.name} is not defined`);
+  },
+  evalLiteral(ast) {
+    return ast.value;
+  },
+  evalMemberExpression(ast, subs) {
+    const prop = String(
+    // NOTE: `String(value)` throws error when
+    // value has overwritten the toString method to return non-string
+    // i.e. `value = {toString: () => []}`
+    ast.computed ? SafeEval.evalAst(ast.property) // `object[property]`
+    : ast.property.name // `object.property` property is Identifier
+    );
+    const obj = SafeEval.evalAst(ast.object, subs);
+    if (obj === undefined || obj === null) {
+      throw TypeError(`Cannot read properties of ${obj} (reading '${prop}')`);
+    }
+    if (!Object.hasOwn(obj, prop) && BLOCKED_PROTO_PROPERTIES.has(prop)) {
+      throw TypeError(`Cannot read properties of ${obj} (reading '${prop}')`);
+    }
+    const result = obj[prop];
+    if (typeof result === 'function') {
+      return result.bind(obj); // arrow functions aren't affected by bind.
+    }
+    return result;
+  },
+  evalUnaryExpression(ast, subs) {
+    const result = {
+      '-': a => -SafeEval.evalAst(a, subs),
+      '!': a => !SafeEval.evalAst(a, subs),
+      '~': a => ~SafeEval.evalAst(a, subs),
+      // eslint-disable-next-line no-implicit-coercion -- API
+      '+': a => +SafeEval.evalAst(a, subs),
+      typeof: a => typeof SafeEval.evalAst(a, subs)
+    }[ast.operator](ast.argument);
+    return result;
+  },
+  evalArrayExpression(ast, subs) {
+    return ast.elements.map(el => SafeEval.evalAst(el, subs));
+  },
+  evalCallExpression(ast, subs) {
+    const args = ast.arguments.map(arg => SafeEval.evalAst(arg, subs));
+    const func = SafeEval.evalAst(ast.callee, subs);
+    // if (func === Function) {
+    //     throw new Error('Function constructor is disabled');
+    // }
+    return func(...args);
+  },
+  evalAssignmentExpression(ast, subs) {
+    if (ast.left.type !== 'Identifier') {
+      throw SyntaxError('Invalid left-hand side in assignment');
+    }
+    const id = ast.left.name;
+    const value = SafeEval.evalAst(ast.right, subs);
+    subs[id] = value;
+    return subs[id];
+  }
+};
+
 /**
- * @typedef {null|boolean|number|string|PlainObject|GenericArray} JSONObject
+ * A replacement for NodeJS' VM.Script which is also {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP | Content Security Policy} friendly.
+ */
+class SafeScript {
+  /**
+   * @param {string} expr Expression to evaluate
+   */
+  constructor(expr) {
+    this.code = expr;
+    this.ast = jsep(this.code);
+  }
+
+  /**
+   * @param {object} context Object whose items will be added
+   *   to evaluation
+   * @returns {EvaluatedResult} Result of evaluated code
+   */
+  runInNewContext(context) {
+    // `Object.create(null)` creates a prototypeless object
+    const keyMap = Object.assign(Object.create(null), context);
+    return SafeEval.evalAst(this.ast, keyMap);
+  }
+}
+
+/* eslint-disable camelcase -- Convenient for escaping */
+
+
+/**
+ * @typedef {null|boolean|number|string|object|GenericArray} JSONObject
  */
 
 /**
@@ -111577,7 +112162,7 @@ module.exports = JSON.parse('[["0","\\u0000",128],["a1","｡",62],["8140","　�
 /***/ ((module) => {
 
 "use strict";
-module.exports = {"i8":"16.14.1"};
+module.exports = {"i8":"16.18.0"};
 
 /***/ }),
 
@@ -111585,7 +112170,7 @@ module.exports = {"i8":"16.14.1"};
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"release-please manifest config schema","description":"Schema for defining manifest config file","type":"object","additionalProperties":false,"definitions":{"ReleaserConfigOptions":{"type":"object","properties":{"release-type":{"description":"The strategy to use for this component.","type":"string"},"bump-minor-pre-major":{"description":"Breaking changes only bump semver minor if version < 1.0.0","type":"boolean"},"bump-patch-for-minor-pre-major":{"description":"Feature changes only bump semver patch if version < 1.0.0","type":"boolean"},"prerelease-type":{"description":"Configuration option for the prerelease versioning strategy. If prerelease strategy used and type set, will set the prerelease part of the version to the provided value in case prerelease part is not present.","type":"string"},"versioning":{"description":"Versioning strategy. Defaults to `default`","type":"string"},"changelog-sections":{"description":"Override the Changelog configuration sections","type":"array","items":{"type":"object","properties":{"type":{"description":"Semantic commit type (e.g. `feat`, `chore`)","type":"string"},"section":{"description":"Changelog section title","type":"string"},"hidden":{"description":"Skip displaying this type of commit. Defaults to `false`.","type":"boolean"}},"required":["type","section"]}},"release-as":{"description":"[DEPRECATED] Override the next version of this package. Consider using a `Release-As` commit instead.","type":"string"},"skip-github-release":{"description":"Skip tagging GitHub releases for this package. Release-Please still requires releases to be tagged, so this option should only be used if you have existing infrastructure to tag these releases.Defaults to `false`.","type":"boolean"},"draft":{"description":"Create the GitHub release in draft mode. Defaults to `false`.","type":"boolean"},"prerelease":{"description":"Create the GitHub release as prerelease. Defaults to `false`.","type":"boolean"},"draft-pull-request":{"description":"Open the release pull request in draft mode. Defaults to `false`.","type":"boolean"},"extra-label":{"description":"Comma-separated list of labels to add to a newly opened pull request","type":"string"},"include-component-in-tag":{"description":"When tagging a release, include the component name as part of the tag. Defaults to `true`.","type":"boolean"},"include-v-in-tag":{"description":"When tagging a release, include `v` in the tag. Defaults to `false`.","type":"boolean"},"changelog-type":{"description":"The type of changelog to use. Defaults to `default`.","type":"string","enum":["default","github"]},"changelog-host":{"description":"Generate changelog links to this GitHub host. Useful for running against GitHub Enterprise.","type":"string"},"changelog-path":{"description":"Path to the file that tracks release note changes. Defaults to `CHANGELOG.md`.","type":"string"},"pull-request-title-pattern":{"description":"Customize the release pull request title.","type":"string"},"pull-request-header":{"description":"Customize the release pull request header.","type":"string"},"pull-request-footer":{"description":"Customize the release pull request footer.","type":"string"},"separate-pull-requests":{"description":"Open a separate release pull request for each component. Defaults to `false`.","type":"boolean"},"always-update":{"description":"Always update the pull request with the latest changes. Defaults to `false`.","type":"boolean"},"tag-separator":{"description":"Customize the separator between the component and version in the GitHub tag.","type":"string"},"date-format":{"description":"Date format given as a strftime expression for the generic strategy.","type":"string"},"extra-files":{"description":"Specify extra generic files to replace versions.","type":"array","items":{"anyOf":[{"description":"The path to the file. The `Generic` updater uses annotations to replace versions.","type":"string"},{"description":"An extra JSON, YAML, or TOML file with a targeted update via jsonpath.","type":"object","properties":{"type":{"description":"The file format type.","enum":["json","toml","yaml"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"},"jsonpath":{"description":"The jsonpath to the version entry in the file.","type":"string"}},"required":["type","path","jsonpath"]},{"description":"An extra XML file with a targeted update via xpath.","type":"object","properties":{"type":{"description":"The file format type.","enum":["xml"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"},"xpath":{"description":"The xpath to the version entry in the file.","type":"string"}},"required":["type","path","xpath"]},{"description":"An extra pom.xml file.","type":"object","properties":{"type":{"description":"The file format type.","enum":["pom"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"}},"required":["type","path"]},{"description":"An extra arbitrary file that includes release-please generic updater\'s annotation.","type":"object","properties":{"type":{"description":"The file format type.","enum":["generic"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"}},"required":["type","path"]}]}},"exclude-paths":{"description":"Path of commits to be excluded from parsing. If all files from commit belong to one of the paths it will be skipped","type":"array","items":{"type":"string"}},"version-file":{"description":"Path to the specialize version file. Used by `ruby` and `simple` strategies.","type":"string"},"snapshot-label":{"description":"Label to add to snapshot pull request. Used by `java` strategies.","type":"string"},"skip-snapshot":{"description":"If set, do not propose snapshot pull requests. Used by `java` strategies.","type":"boolean"},"initial-version":{"description":"Releases the initial library with a specified version","type":"string"},"component-no-space":{"description":"release-please automatically adds ` ` (space) in front of parsed ${component}. This option indicates whether that behaviour should be disabled. Defaults to `false`","type":"boolean"}}}},"allOf":[{"$ref":"#/definitions/ReleaserConfigOptions"},{"properties":{"$schema":{"description":"Path to the release-please manifest config schema","type":"string","format":"uri-reference"},"packages":{"description":"Per-path component configuration.","type":"object","additionalProperties":{"$ref":"#/definitions/ReleaserConfigOptions"}},"bootstrap-sha":{"description":"For the initial release of a library, only consider as far back as this commit SHA. This is an uncommon use case and should generally be avoided.","type":"string"},"last-release-sha":{"description":"For any release, only consider as far back as this commit SHA. This is an uncommon use case and should generally be avoided.","type":"string"},"always-link-local":{"description":"When using the `node-workspace` plugin, force all local dependencies to be linked.","type":"boolean"},"plugins":{"description":"Plugins to apply to pull requests. Plugins can be added to perform extra release processing that cannot be achieved by an individual release strategy.","type":"array","items":{"anyOf":[{"description":"The plugin name for plugins that do not require other options.","type":"string"},{"description":"Configuration for the `linked-versions` plugin.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["linked-versions"]},"groupName":{"description":"The name of the group of components.","type":"string"},"components":{"description":"List of component names that are part of this group.","type":"array","items":{"type":"string"}},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"specialWords":{"description":"Words that sentence casing logic will not be applied to","type":"array","items":{"type":"string"}}},"required":["type","groupName","components"]},{"description":"Configuration for various `workspace` plugins.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["cargo-workspace","maven-workspace"]},"updateAllPackages":{"description":"Whether to force updating all packages regardless of the dependency tree. Defaults to `false`.","type":"boolean"},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"considerAllArtifacts":{"description":"Whether to analyze all packages in the workspace for cross-component version bumping. This currently only works for the maven-workspace plugin. Defaults to `true`.","type":"boolean"}}},{"description":"Configuration for various `workspace` plugins.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["node-workspace"]},"updateAllPackages":{"description":"Whether to force updating all packages regardless of the dependency tree. Defaults to `false`.","type":"boolean"},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"considerAllArtifacts":{"description":"Whether to analyze all packages in the workspace for cross-component version bumping. This currently only works for the maven-workspace plugin. Defaults to `true`.","type":"boolean"},"updatePeerDependencies":{"description":"Also bump peer dependency versions if they are modified. Defaults to `false`.","type":"boolean"}}},{"description":"Configuration for various `group-priority` plugin","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["group-priority"]},"groups":{"description":"Group names ordered with highest priority first.","type":"array","items":{"type":"string"}}}},{"description":"Other plugins","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string"}}}]}},"signoff":{"description":"Text to be used as Signed-off-by in the commit.","type":"string"},"group-pull-request-title-pattern":{"description":"When grouping multiple release pull requests use this pattern for the title.","type":"string"},"release-search-depth":{"description":"When considering previously releases, only look this deep.","type":"number"},"commit-search-depth":{"description":"When considering commit history, only look this many commits deep.","type":"number"},"sequential-calls":{"description":"Whether to open pull requests/releases sequentially rather than concurrently. If you have many components, you may want to set this to avoid secondary rate limits.","type":"boolean"},"label":{"description":"Comma-separated list of labels to add to newly opened pull request. These are used to identify release pull requests.","type":"string"},"release-label":{"description":"Comma-separated list of labels to add to a pull request that has been released/tagged","type":"string"},"component-no-space":{"description":"release-please automatically adds ` ` (space) in front of parsed ${component}. This option indicates whether that behaviour should be disabled. Defaults to `false`","type":"boolean"}},"required":["packages"]}],"properties":{"$schema":true,"packages":true,"bootstrap-sha":true,"last-release-sha":true,"always-link-local":true,"plugins":true,"signoff":true,"group-pull-request-title-pattern":true,"release-search-depth":true,"commit-search-depth":true,"sequential-calls":true,"release-type":true,"bump-minor-pre-major":true,"bump-patch-for-minor-pre-major":true,"versioning":true,"changelog-sections":true,"release-as":true,"skip-github-release":true,"draft":true,"prerelease":true,"draft-pull-request":true,"label":true,"release-label":true,"extra-label":true,"include-component-in-tag":true,"include-v-in-tag":true,"changelog-type":true,"changelog-host":true,"changelog-path":true,"pull-request-title-pattern":true,"pull-request-header":true,"pull-request-footer":true,"separate-pull-requests":true,"always-update":true,"always-update":true,"tag-separator":true,"date-format":true,"extra-files":true,"version-file":true,"snapshot-label":true,"initial-version":true,"exclude-paths":true,"component-no-space":false}}');
+module.exports = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"release-please manifest config schema","description":"Schema for defining manifest config file","type":"object","additionalProperties":false,"definitions":{"ReleaserConfigOptions":{"type":"object","properties":{"release-type":{"description":"The strategy to use for this component.","type":"string"},"bump-minor-pre-major":{"description":"Breaking changes only bump semver minor if version < 1.0.0","type":"boolean"},"bump-patch-for-minor-pre-major":{"description":"Feature changes only bump semver patch if version < 1.0.0","type":"boolean"},"prerelease-type":{"description":"Configuration option for the prerelease versioning strategy. If prerelease strategy used and type set, will set the prerelease part of the version to the provided value in case prerelease part is not present.","type":"string"},"versioning":{"description":"Versioning strategy. Defaults to `default`","type":"string"},"changelog-sections":{"description":"Override the Changelog configuration sections","type":"array","items":{"type":"object","properties":{"type":{"description":"Semantic commit type (e.g. `feat`, `chore`)","type":"string"},"section":{"description":"Changelog section title","type":"string"},"hidden":{"description":"Skip displaying this type of commit. Defaults to `false`.","type":"boolean"}},"required":["type","section"]}},"release-as":{"description":"[DEPRECATED] Override the next version of this package. Consider using a `Release-As` commit instead.","type":"string"},"skip-github-release":{"description":"Skip tagging GitHub releases for this package. Release-Please still requires releases to be tagged, so this option should only be used if you have existing infrastructure to tag these releases.Defaults to `false`.","type":"boolean"},"draft":{"description":"Create the GitHub release in draft mode. Defaults to `false`.","type":"boolean"},"prerelease":{"description":"Create the GitHub release as prerelease. Defaults to `false`.","type":"boolean"},"draft-pull-request":{"description":"Open the release pull request in draft mode. Defaults to `false`.","type":"boolean"},"extra-label":{"description":"Comma-separated list of labels to add to a newly opened pull request","type":"string"},"include-component-in-tag":{"description":"When tagging a release, include the component name as part of the tag. Defaults to `true`.","type":"boolean"},"include-v-in-tag":{"description":"When tagging a release, include `v` in the tag. Defaults to `false`.","type":"boolean"},"changelog-type":{"description":"The type of changelog to use. Defaults to `default`.","type":"string","enum":["default","github"]},"changelog-host":{"description":"Generate changelog links to this GitHub host. Useful for running against GitHub Enterprise.","type":"string"},"changelog-path":{"description":"Path to the file that tracks release note changes. Defaults to `CHANGELOG.md`.","type":"string"},"pull-request-title-pattern":{"description":"Customize the release pull request title.","type":"string"},"pull-request-header":{"description":"Customize the release pull request header.","type":"string"},"pull-request-footer":{"description":"Customize the release pull request footer.","type":"string"},"separate-pull-requests":{"description":"Open a separate release pull request for each component. Defaults to `false`.","type":"boolean"},"always-update":{"description":"Always update the pull request with the latest changes. Defaults to `false`.","type":"boolean"},"tag-separator":{"description":"Customize the separator between the component and version in the GitHub tag.","type":"string"},"date-format":{"description":"Date format given as a strftime expression for the generic strategy.","type":"string"},"extra-files":{"description":"Specify extra generic files to replace versions.","type":"array","items":{"anyOf":[{"description":"The path to the file. The `Generic` updater uses annotations to replace versions.","type":"string"},{"description":"An extra JSON, YAML, or TOML file with a targeted update via jsonpath.","type":"object","properties":{"type":{"description":"The file format type.","enum":["json","toml","yaml"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"},"jsonpath":{"description":"The jsonpath to the version entry in the file.","type":"string"}},"required":["type","path","jsonpath"]},{"description":"An extra XML file with a targeted update via xpath.","type":"object","properties":{"type":{"description":"The file format type.","enum":["xml"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"},"xpath":{"description":"The xpath to the version entry in the file.","type":"string"}},"required":["type","path","xpath"]},{"description":"An extra pom.xml file.","type":"object","properties":{"type":{"description":"The file format type.","enum":["pom"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"}},"required":["type","path"]},{"description":"An extra arbitrary file that includes release-please generic updater\'s annotation.","type":"object","properties":{"type":{"description":"The file format type.","enum":["generic"]},"path":{"description":"The path to the file.","type":"string"},"glob":{"description":"Whether to treat the path as a glob. Defaults to `false`.","type":"boolean"}},"required":["type","path"]}]}},"exclude-paths":{"description":"Path of commits to be excluded from parsing. If all files from commit belong to one of the paths it will be skipped","type":"array","items":{"type":"string"}},"version-file":{"description":"Path to the specialize version file. Used by `ruby` and `simple` strategies.","type":"string"},"snapshot-label":{"description":"Label to add to snapshot pull request. Used by `java` strategies.","type":"string"},"skip-snapshot":{"description":"If set, do not propose snapshot pull requests. Used by `java` strategies.","type":"boolean"},"initial-version":{"description":"Releases the initial library with a specified version","type":"string"},"component-no-space":{"description":"release-please automatically adds ` ` (space) in front of parsed ${component}. This option indicates whether that behaviour should be disabled. Defaults to `false`","type":"boolean"}}}},"allOf":[{"$ref":"#/definitions/ReleaserConfigOptions"},{"properties":{"$schema":{"description":"Path to the release-please manifest config schema","type":"string","format":"uri-reference"},"packages":{"description":"Per-path component configuration.","type":"object","additionalProperties":{"$ref":"#/definitions/ReleaserConfigOptions"}},"bootstrap-sha":{"description":"For the initial release of a library, only consider as far back as this commit SHA. This is an uncommon use case and should generally be avoided.","type":"string"},"last-release-sha":{"description":"For any release, only consider as far back as this commit SHA. This is an uncommon use case and should generally be avoided.","type":"string"},"always-link-local":{"description":"When using the `node-workspace` plugin, force all local dependencies to be linked.","type":"boolean"},"plugins":{"description":"Plugins to apply to pull requests. Plugins can be added to perform extra release processing that cannot be achieved by an individual release strategy.","type":"array","items":{"anyOf":[{"description":"The plugin name for plugins that do not require other options.","type":"string"},{"description":"Configuration for the `linked-versions` plugin.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["linked-versions"]},"groupName":{"description":"The name of the group of components.","type":"string"},"components":{"description":"List of component names that are part of this group.","type":"array","items":{"type":"string"}},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"specialWords":{"description":"Words that sentence casing logic will not be applied to","type":"array","items":{"type":"string"}}},"required":["type","groupName","components"]},{"description":"Configuration for various `workspace` plugins.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["cargo-workspace","maven-workspace"]},"updateAllPackages":{"description":"Whether to force updating all packages regardless of the dependency tree. Defaults to `false`.","type":"boolean"},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"considerAllArtifacts":{"description":"Whether to analyze all packages in the workspace for cross-component version bumping. This currently only works for the maven-workspace plugin. Defaults to `true`.","type":"boolean"}}},{"description":"Configuration for various `workspace` plugins.","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["node-workspace"]},"updateAllPackages":{"description":"Whether to force updating all packages regardless of the dependency tree. Defaults to `false`.","type":"boolean"},"merge":{"description":"Whether to merge in-scope pull requests into a combined release pull request. Defaults to `true`.","type":"boolean"},"considerAllArtifacts":{"description":"Whether to analyze all packages in the workspace for cross-component version bumping. This currently only works for the maven-workspace plugin. Defaults to `true`.","type":"boolean"},"updatePeerDependencies":{"description":"Also bump peer dependency versions if they are modified. Defaults to `false`.","type":"boolean"}}},{"description":"Configuration for various `group-priority` plugin","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string","enum":["group-priority"]},"groups":{"description":"Group names ordered with highest priority first.","type":"array","items":{"type":"string"}}}},{"description":"Other plugins","type":"object","properties":{"type":{"description":"The name of the plugin.","type":"string"}}}]}},"signoff":{"description":"Text to be used as Signed-off-by in the commit.","type":"string"},"group-pull-request-title-pattern":{"description":"When grouping multiple release pull requests use this pattern for the title.","type":"string"},"release-search-depth":{"description":"When considering previously releases, only look this deep.","type":"number"},"commit-search-depth":{"description":"When considering commit history, only look this many commits deep.","type":"number"},"sequential-calls":{"description":"Whether to open pull requests/releases sequentially rather than concurrently. If you have many components, you may want to set this to avoid secondary rate limits.","type":"boolean"},"label":{"description":"Comma-separated list of labels to add to newly opened pull request. These are used to identify release pull requests.","type":"string"},"release-label":{"description":"Comma-separated list of labels to add to a pull request that has been released/tagged","type":"string"},"component-no-space":{"description":"release-please automatically adds ` ` (space) in front of parsed ${component}. This option indicates whether that behaviour should be disabled. Defaults to `false`","type":"boolean"}},"required":["packages"]}],"properties":{"$schema":true,"packages":true,"bootstrap-sha":true,"last-release-sha":true,"always-link-local":true,"plugins":true,"signoff":true,"group-pull-request-title-pattern":true,"release-search-depth":true,"commit-search-depth":true,"sequential-calls":true,"release-type":true,"bump-minor-pre-major":true,"bump-patch-for-minor-pre-major":true,"versioning":true,"changelog-sections":true,"release-as":true,"skip-github-release":true,"draft":true,"prerelease":true,"draft-pull-request":true,"label":true,"release-label":true,"extra-label":true,"include-component-in-tag":true,"include-v-in-tag":true,"changelog-type":true,"changelog-host":true,"changelog-path":true,"pull-request-title-pattern":true,"pull-request-header":true,"pull-request-footer":true,"separate-pull-requests":true,"always-update":true,"tag-separator":true,"date-format":true,"extra-files":true,"version-file":true,"snapshot-label":true,"initial-version":true,"exclude-paths":true,"component-no-space":false}}');
 
 /***/ }),
 
@@ -111609,7 +112194,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/
+/******/ 	
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -111623,7 +112208,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 			loaded: false,
 /******/ 			exports: {}
 /******/ 		};
-/******/
+/******/ 	
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
@@ -111632,14 +112217,14 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
 /******/ 		}
-/******/
+/******/ 	
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/
+/******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
@@ -111649,11 +112234,11 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 			return module;
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
-/******/
+/******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
-/******/
+/******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
